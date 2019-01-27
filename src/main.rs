@@ -76,6 +76,7 @@ pub fn preflight_insert_record(_: HttpRequest<AppState>) -> FutureResponse<HttpR
 }
 
 fn main() {
+    let sys = System::new("kinesis_proxy");
     let addr = SyncArbiter::start(3, move || KinesisExecutor(KinesisClient::new(Region::ApNortheast1)));
     server::new(
         move || App::with_state(AppState::new(addr.clone()))
