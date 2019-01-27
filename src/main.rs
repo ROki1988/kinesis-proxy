@@ -36,7 +36,7 @@ impl Handler<SendRecord> for KinesisExecutor {
         self.0.put_record(PutRecordInput { data: serde_json::to_vec(&input.data).unwrap(), partition_key: input.data.id().to_string(), stream_name: "test".to_string(), ..Default::default() })
             .sync()
             .map(|_| ())
-            .map_err(|err| ErrorInternalServerError(err))
+            .map_err(ErrorInternalServerError)
     }
 }
 
@@ -72,7 +72,7 @@ pub fn preflight_insert_record(_: HttpRequest<AppState>) -> FutureResponse<HttpR
 }
 
 fn main() {
-    let sys = System::new("kinesis_proxy");
+    let _sys = System::new("kinesis_proxy");
     let addr = SyncArbiter::start(3, move || KinesisExecutor(KinesisClient::new(Region::ApNortheast1)));
     server::new(
         move || App::with_state(AppState::new(addr.clone()))
