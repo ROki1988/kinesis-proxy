@@ -1,0 +1,18 @@
+[package]
+name = "kinesis-proxy"
+version = "0.1.0"
+authors = ["ROki1988 <roki.swindler@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+actix = "0.7"
+actix-web = "0.7"
+rusoto_core = "0.36.0"
+rusoto_kinesis = "0.36.0"
+futures = "0.1"
+serde = "1.0.85"
+serde_json = "1.0.36"
+
+[dependencies.zipkin-types]
+version = "0.1.0"
+features = ["serde"]
