@@ -1,7 +1,5 @@
-use std::{sync::Arc, thread, time::Duration};
-use std::rc::Rc;
+use std::{sync::Arc};
 
-use actix::prelude::*;
 use actix::Actor;
 use actix::Addr;
 use actix::Handler;
@@ -9,19 +7,17 @@ use actix::Message;
 use actix::SyncArbiter;
 use actix::SyncContext;
 use actix::System;
-use actix_web::{App, AsyncResponder, FutureResponse, HttpRequest, HttpResponse, Responder, server, State};
+use actix_web::{App, AsyncResponder, FutureResponse, HttpRequest, HttpResponse, server};
 use actix_web::Error as AWError;
 use actix_web::error::ErrorInternalServerError;
 use actix_web::http::Method;
 use actix_web::Json;
-use futures::{future::lazy, sync::oneshot::channel};
 use futures::future;
 use futures::Future;
 use rusoto_core::Region;
 use rusoto_kinesis::{Kinesis, KinesisClient, PutRecordInput};
-use zipkin_types::Span;
-use serde::Serialize;
 use serde_json;
+use zipkin_types::Span;
 
 pub struct KinesisExecutor(KinesisClient);
 
@@ -37,10 +33,10 @@ impl Handler<SendRecord> for KinesisExecutor {
     type Result = Result<(), AWError>;
 
     fn handle(&mut self, input: SendRecord, _: &mut Self::Context) -> Self::Result {
-       self.0.put_record(PutRecordInput{ data: serde_json::to_vec(&input.data).unwrap(), partition_key: input.data.id().to_string(), stream_name: "test".to_string(), ..Default::default() })
-           .sync()
-           .map(|_| ())
-           .map_err(|err| ErrorInternalServerError(err))
+        self.0.put_record(PutRecordInput { data: serde_json::to_vec(&input.data).unwrap(), partition_key: input.data.id().to_string(), stream_name: "test".to_string(), ..Default::default() })
+            .sync()
+            .map(|_| ())
+            .map_err(|err| ErrorInternalServerError(err))
     }
 }
 
@@ -65,7 +61,7 @@ fn put_record((target, req): (Json<Span>, HttpRequest<AppState>)) -> impl Future
     actor.map_err(|error| actix_web::error::ErrorInternalServerError(format!("{:?}", error)))
         .and_then(|r| match r {
             Ok(_) => Ok(HttpResponse::Ok().finish()),
-            Err(err) => {
+            Err(_) => {
                 Ok(HttpResponse::InternalServerError().finish())
             }
         }).responder()
